@@ -109,9 +109,22 @@ static int unregister(NSPredicate *predicate)
 	{
 		CFURLRef urlRef = (__bridge CFURLRef)proxy.bundleURL;
 		
-		if (urlRef == nil || _LSUnregisterURL(urlRef) != noErr)
+		if (urlRef == nil)
 		{
-			fprintf(stderr, "Unregister failure: %s\n", proxy.bundleURL.path.UTF8String);
+			fprintf(stderr, "Unregister failure: %s (CFURLRef is nil)\n", proxy.bundleURL.path.UTF8String);
+			
+			continue;
+		}
+		
+		OSStatus status = _LSUnregisterURL(urlRef);
+		
+		if (status != noErr)
+		{
+			fprintf(stderr, "Unregister failure: %s (%s: %s)\n", proxy.bundleURL.path.UTF8String, GetMacOSStatusErrorString(status), GetMacOSStatusCommentString(status));
+			
+//			NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+//			
+//			fprintf(stderr, "Unregister failure: %s (%s)\n", proxy.bundleURL.path.UTF8String, error.description.UTF8String);
 			
 			continue;
 		}
